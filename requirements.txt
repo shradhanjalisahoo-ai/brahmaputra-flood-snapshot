@@ -1,0 +1,12 @@
+# Python 3.11 recommended
+streamlit==1.39.0
+rasterio==1.4.2
+rioxarray==0.17.0
+matplotlib==3.9.2
+odc-stac==0.3.10
+pystac-client==0.8.5
+planetary-computer==1.0.0
+# transitive deps the pipeline needs directly
+numpy==1.26.4
+xarray==2024.10.0
+dask==2024.10.0

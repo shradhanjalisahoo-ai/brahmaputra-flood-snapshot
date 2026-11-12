@@ -99,7 +99,7 @@ tests/                       offline unit tests
 
 - **Threshold sensitivity:** new water is 49.0 km² at MNDWI > 0, and about 38 to 69 km²
   for thresholds from +0.1 to -0.1. The estimate depends strongly on the threshold.
-- - **Hand labels:** 60 spots from the 26 July scene only, labelled from imagery by one person (23 water, 28 land,
+- **Hand labels:** 60 spots from the 26 July scene only, labelled from imagery by one person (23 water, 28 land,
   9 unsure; unsure spots are not scored, leaving 51). The sample is drawn evenly from
   five MNDWI ranges, so it over-represents ambiguous pixels. Scores compare thresholds
   with each other and are not accuracy over the whole area. Reproduce with
@@ -111,8 +111,10 @@ tests/                       offline unit tests
 
 ## Limitations
 
-- Optical data: monsoon cloud hides the early-July flood. In the 2024 test month,
-  only 26 July was usable over this box.
+- Optical data: monsoon cloud limits what Sentinel-2 can see. In the 2024 test month,
+  every scene from 1 to 21 July was about 95 to 100% cloudy (tile-level figures), so
+  early July cannot be assessed. 26 July was the first clear date and is the one used
+  here. 31 July was partly clear at tile level and was not evaluated for this box.
 - "New water" is measured against a February low-water baseline, so it includes the
   normal seasonal rise, flooded paddy fields, and muddy or shallow water that the index
   can misjudge.

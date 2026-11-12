@@ -121,7 +121,53 @@ with right:
     st.write(f"Baseline window: {meta.get('pre_window', 'n/a')}")
     st.write(f"Event window: {meta.get('post_window', 'n/a')}")
     st.write(f"Scenes used (pre/post): {meta.get('pre_scenes', 'n/a')} / {meta.get('post_scenes', 'n/a')}")
+     # ---- Priority cells: where to send teams first (from the GeoParquet table) ----
+FEATURES = Path("data/catalog/features.parquet")
 
+
+@st.cache_data
+def load_priority(path):
+    """Latest run's per-cell table, or None if the catalogue has not been built."""
+    if not path.exists():
+        return None
+    import geopandas as gpd  # imported lazily, like rasterio above
+
+    table = gpd.read_parquet(path)
+    return table[table["event_date"] == table["event_date"].max()].copy()
+
+
+cells = load_priority(FEATURES)
+st.subheader("Where to go first")
+if cells is None:
+    st.info("No feature table yet. Run `python pipeline/catalogue.py` to build it.")
+else:
+    cells["flooded_pct_of_cell"] = cells["new_km2"] / cells["cell_km2"] * 100
+    rank_by = st.radio("Rank cells by", ["new water km²", "% of cell flooded"], horizontal=True)
+    sort_col = "new_km2" if rank_by == "new water km²" else "flooded_pct_of_cell"
+    top = cells.sort_values(sort_col, ascending=False).head(10)
+    st.caption(
+        f"2 km cells ranked by newly flooded area, event date {cells['event_date'].iloc[0]}. "
+        "Cells are a stand-in for administrative blocks."
+    )
+    map_col, table_col = st.columns([3, 2])
+    with map_col:
+        fig2, ax2 = plt.subplots(figsize=(6, 6))
+        cells.plot(column="new_km2", cmap="Reds", legend=True, edgecolor="white",
+                   linewidth=0.3, ax=ax2,
+                   legend_kwds={"label": "new water (km²)", "shrink": 0.7})
+        for _, row in top.head(5).iterrows():
+            ax2.annotate(row["cell_id"], (row.geometry.centroid.x, row.geometry.centroid.y),
+                         ha="center", fontsize=7)
+        ax2.set_axis_off()
+        st.pyplot(fig2)
+    with table_col:
+        st.dataframe(
+            top[["cell_id", "new_km2", "flooded_pct_of_cell", "valid_frac"]]
+            .rename(columns={"new_km2": "new water km²", "flooded_pct_of_cell": "% of cell",
+                             "valid_frac": "observed"})
+            .round(2),
+            hide_index=True,
+        )
 with st.expander("Method and limitations"):
     st.markdown(
         "- Water = MNDWI (Green B03, SWIR1 B11) above a threshold, after SCL cloud/shadow masking.\n"

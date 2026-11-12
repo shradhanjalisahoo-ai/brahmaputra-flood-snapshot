@@ -39,31 +39,40 @@ def read_run():
     run_id = f"{summary['post_window']}_vs_{summary['pre_window']}"
     return run_id, summary, arr, info
 
+def starts(n):
+    """Start offsets of the cells along one axis; a thin leftover strip joins its neighbour."""
+    s = list(range(0, n, CELL_PX))
+    if len(s) > 1 and n - s[-1] < CELL_PX // 2:
+        s.pop()
+    return s
+
 
 def cell_table(run_id, summary, arr, info):
-    """One row per CELL_PX x CELL_PX cell: flooded area and how much was observable."""
+    """One row per cell: flooded area and how much of the cell was observable."""
     tr = info["transform"]
     px_km2 = abs(tr.a * tr.e) / 1e6
     h, w = arr.shape
+    rs, cs = starts(h), starts(w)
     rows, geoms = [], []
-    for r0 in range(0, h, CELL_PX):
-        for c0 in range(0, w, CELL_PX):
-            win = Window(c0, r0, min(CELL_PX, w - c0), min(CELL_PX, h - r0))
-            block = arr[r0:r0 + int(win.height), c0:c0 + int(win.width)]
+    for i, r0 in enumerate(rs):
+        r1 = rs[i + 1] if i + 1 < len(rs) else h
+        for j, c0 in enumerate(cs):
+            c1 = cs[j + 1] if j + 1 < len(cs) else w
+            block = arr[r0:r1, c0:c1]
             n_valid = int((block != NODATA).sum())
             n_new = int((block == NEW).sum())
             rows.append({
                 "run_id": run_id,
                 "event_date": summary["post_window"],
                 "baseline_date": summary["pre_window"],
-                "cell_id": f"r{r0 // CELL_PX}c{c0 // CELL_PX}",
+                "cell_id": f"r{i}c{j}",
                 "cell_km2": block.size * px_km2,
                 "new_km2": n_new * px_km2,
                 "persistent_km2": int((block == PERM).sum()) * px_km2,
                 "valid_frac": n_valid / block.size,
                 "new_pct_of_valid": 100 * n_new / n_valid if n_valid else np.nan,
             })
-            geoms.append(box(*window_bounds(win, tr)))
+            geoms.append(box(*window_bounds(Window(c0, r0, c1 - c0, r1 - r0), tr)))
     return gpd.GeoDataFrame(rows, geometry=geoms, crs=info["crs"])
 
 

@@ -12,3 +12,4 @@ xarray==2024.10.0
 dask==2024.10.0
 geopandas==1.0.1
 pyarrow==17.0.0
+pytest==9.2.0

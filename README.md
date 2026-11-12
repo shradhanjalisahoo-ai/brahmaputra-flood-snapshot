@@ -99,7 +99,7 @@ tests/                       offline unit tests
 
 - **Threshold sensitivity:** new water is 49.0 km² at MNDWI > 0, and about 38 to 69 km²
   for thresholds from +0.1 to -0.1. The estimate depends strongly on the threshold.
-- - **Hand labels:** 60 spots labelled from imagery by one person (23 water, 28 land,
+- - **Hand labels:** 60 spots from the 26 July scene only, labelled from imagery by one person (23 water, 28 land,
   9 unsure; unsure spots are not scored, leaving 51). The sample is drawn evenly from
   five MNDWI ranges, so it over-represents ambiguous pixels. Scores compare thresholds
   with each other and are not accuracy over the whole area. Reproduce with

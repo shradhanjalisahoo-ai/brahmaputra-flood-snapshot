@@ -124,5 +124,4 @@ tests/                       offline unit tests
 ## Data and credits
 
 Contains modified Copernicus Sentinel-2 data, accessed via Microsoft Planetary Computer.
-
-[AI-assistant disclosure: see the report.]
+STAr EO-AI Lab, IIT Kanpur

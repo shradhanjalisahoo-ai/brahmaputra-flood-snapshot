@@ -64,6 +64,8 @@ python -m pytest -q
 
 Offline tests for the water mask, cloud masking, cell grid, and catalogue re-runs.
 
+19 tests; all should pass
+
 ## Outputs
 
 | Path | What it is |
@@ -79,26 +81,32 @@ official block boundaries.
 ## Repository layout
 
 ```
-app.py                     Streamlit asset (map, metrics, ranked cells)
-pipeline/run.py            one-command entry point
-pipeline/water_change.py   load, cloud-mask, MNDWI, change map
-pipeline/catalogue.py      STAC catalogue + GeoParquet cell table
-pipeline/search_scenes.py  catalogue search: how many scenes, how cloudy
-pipeline/preview.py        quick look at the two dates
-pipeline/sensitivity.py    effect of the MNDWI threshold on the estimate
-pipeline/make_label_sheet.py, score_thresholds.py   hand-label sheets and scoring
-data/labelling/            60 hand labels and sampled points (see Evaluation)
-tests/                     offline unit tests
+app.py                       Streamlit asset (map, metrics, ranked cells)
+pipeline/run.py              one-command entry point
+pipeline/water_change.py     load, cloud-mask, MNDWI, change map
+pipeline/catalogue.py        STAC catalogue + GeoParquet cell table
+pipeline/search_scenes.py    catalogue search: how many scenes, how cloudy
+pipeline/preview.py          quick look at the two dates
+pipeline/sensitivity.py      effect of the MNDWI threshold on the estimate
+pipeline/make_label_sheet.py builds the hand-label sheets
+pipeline/check_scl.py        checks the cloud-mask (SCL) classes
+pipeline/score_thresholds.py scores the hand labels at each MNDWI threshold
+data/labelling/              60 hand labels and sampled points (see Evaluation)
+tests/                       offline unit tests
 ```
 
 ## Evaluation (summary; details in the report)
 
 - **Threshold sensitivity:** new water is 49.0 km² at MNDWI > 0, and about 38 to 69 km²
   for thresholds from +0.1 to -0.1. The estimate depends strongly on the threshold.
-- **Hand labels:** 60 spots labelled from imagery by one person (23 water, 28 land,
-  9 unsure; unsure spots are not scored). The sample is drawn evenly from five MNDWI
-  ranges, so it over-represents ambiguous pixels. Scores compare thresholds with each
-  other and are not accuracy over the whole area.
+- - **Hand labels:** 60 spots labelled from imagery by one person (23 water, 28 land,
+  9 unsure; unsure spots are not scored, leaving 51). The sample is drawn evenly from
+  five MNDWI ranges, so it over-represents ambiguous pixels. Scores compare thresholds
+  with each other and are not accuracy over the whole area. Reproduce with
+  `python -m pipeline.score_thresholds`.
+  F1 is 0.81 to 0.86 for every threshold from -0.1 to +0.1 (0.83 at the default 0.0),
+  so on 51 points these thresholds cannot be told apart. Lower thresholds raise recall
+  and add false positives; higher ones do the opposite.
 - Labels for some sheets began as an AI first pass that was checked and edited by me.
 
 ## Limitations
